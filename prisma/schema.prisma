@@ -1,0 +1,167 @@
+// prisma/schema.prisma
+datasource db {
+  provider  =    "mongodb"
+  url  	    = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ############################ All Enums 
+enum Role {
+  ADMIN
+  USER
+}
+// ############################ End Of Enums
+
+model User {
+  id                        String       @id @default(cuid()) @map("_id")
+  profileImage              String?
+  firstName                 String?
+  middleName                String?
+  lastName                  String?
+  username                  String
+  gender                    String?
+  dateOfBirth               String?
+  telePhone                 String?
+
+  profession                String?
+  bio                       String?
+  // Address
+  address                   String?
+  cityName                  String?
+  country                   String?
+  pinCode                   String?
+
+  // Account Information
+  email                   String?      @unique
+  emailVerified           DateTime?
+  password                String?
+  role                    Role     @default(USER)
+
+  // Identification 
+  accounts                          Account[]
+  problem                           Problem[]
+  solution                           Solution[]
+
+  posts                             Post[]
+  questions                         Question[]
+
+  isTwoFactorEnabled Boolean        @default(false)
+  twoFactorConfirmation             TwoFactorConfirmation?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+model Account {
+  id                 String        @id @default(cuid()) @map("_id")
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  
+  access_token       String?  
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id                String    @id @default(cuid()) @map("_id")
+  email             String
+  token             String    @unique
+  expires           DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id                String    @id @default(cuid()) @map("_id")
+  email             String
+  token             String    @unique
+  expires           DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id                String        @id @default(cuid()) @map("_id")
+  email             String
+  token             String        @unique
+  expires           DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id                String        @id @default(cuid()) @map("_id")
+  email             String  
+
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+  
+model SearchQuery {
+      id                           String    @id @default(cuid()) @map("_id")
+      query String
+}
+
+model Problem {
+  id            String    @id @default(cuid()) @map("_id")
+  title         String
+  content       String
+  author        User?     @relation(fields: [authorEmail], references: [email])
+  authorEmail   String?
+  createdAt     DateTime  @default(now())
+  embedding     Float[]  // store vector
+  solutions     Solution[]
+  updatedAt DateTime @updatedAt
+}
+
+model Solution {
+  id                String   @id @default(cuid()) @map("_id")
+  title             String
+  content           String
+  createdAt         DateTime @default(now())
+
+  author            User?   @relation(fields: [authorEmail], references: [email])
+  authorEmail       String?
+  Problem           Problem?   @relation(fields: [problemId], references: [id])
+  problemId         String?
+  updatedAt DateTime @updatedAt
+}
+
+// ###################################################################
+
+
+model Post {
+  id          String     @id @default(cuid()) @map("_id")
+  title       String
+  content     String
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+}
+
+model Question {
+  id        String     @id @default(cuid()) @map("_id")
+  content   String
+  postId    String
+  post      Post       @relation(fields: [postId], references: [id])
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+}
+
+
