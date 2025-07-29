@@ -45,7 +45,6 @@ model User {
   problem                           Problem[]
   solution                           Solution[]
 
-  posts                             Post[]
   questions                         Question[]
 
   isTwoFactorEnabled Boolean        @default(false)
@@ -125,6 +124,7 @@ model Problem {
   createdAt     DateTime  @default(now())
   embedding     Float[]  // store vector
   solutions     Solution[]
+  questions     Question[]
   updatedAt DateTime @updatedAt
 }
 
@@ -144,21 +144,12 @@ model Solution {
 // ###################################################################
 
 
-model Post {
-  id          String     @id @default(cuid()) @map("_id")
-  title       String
-  content     String
-  authorId    String
-  author      User       @relation(fields: [authorId], references: [id])
-  questions   Question[]
-  createdAt   DateTime   @default(now())
-}
 
 model Question {
   id        String     @id @default(cuid()) @map("_id")
   content   String
-  postId    String
-  post      Post       @relation(fields: [postId], references: [id])
+  problemId    String
+  problem      Problem       @relation(fields: [problemId], references: [id])
   userId    String
   user      User       @relation(fields: [userId], references: [id])
   createdAt DateTime   @default(now())
