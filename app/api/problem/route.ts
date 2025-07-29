@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         title,
         content,
         authorEmail: session.user.email,
-        embedding: JSON.stringify(embedding),
+        embedding: embedding,
       },
     });
 
