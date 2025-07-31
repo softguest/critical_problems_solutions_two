@@ -12,7 +12,7 @@ const ProblemsPage = async () => {
   });
 
   return (
-    <div className='max-w-4xl py-8 mx-4'>
+    <div className='max-w-4xl mx-auto py-8 px-4'>
       <h1 className='text-3xl font-bold mb-4'>Problems</h1>
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
         {problems.map((problem) => (
@@ -21,7 +21,7 @@ const ProblemsPage = async () => {
             href={`/dashboard/problem/${problem.id}`}
             className='bg-white p-4 rounded-md shadow-md'
           >
-            <h2 className='text-xl font-bold'>{problem.title}</h2>
+            <h2 className='text-xl font-bold bg-slate-100 p-2 mb-4'>{problem.title}</h2>
             <p>Published by: {problem.author?.firstName} {problem.author?.lastName}</p>
           </Link>
         ))}

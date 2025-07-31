@@ -18,9 +18,9 @@ const Solutions: FC<SolutionsProps> = async ({ problemId }) => {
   return (
     <div className='mt-8'>
       <h2 className='text-2xl font-bold'>Solutions</h2>
-      <div>
+      <div className='mt-4'>
         {solutions.map((solution) => (
-          <li key={solution.id} className='mb-4 bg-slate-300 p-2'>
+          <li key={solution.id} className='mb-4 bg-slate-100 p-2 rounded-md shadow-sm'>
             <div className='flex items-center mb-2'>
               <div className='text-blue-500 font-bold mr-2'>
                 {solution.author?.firstName}

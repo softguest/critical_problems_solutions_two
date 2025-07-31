@@ -23,7 +23,7 @@ const ProblemDetailPage: FC<ProblemDetailPageProps> = async ({ params }) => {
   });
 
   return (
-    <div className="max-w-4xl py-4 mx-4">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <div className='mb-6'>
         <Dialog>
           <DialogTrigger asChild>
