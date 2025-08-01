@@ -1,7 +1,7 @@
-// components/UserModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 interface UserModalProps {
   showModal: boolean;
@@ -10,41 +10,65 @@ interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ showModal, setShowModal, firstName }) => {
-  if (!showModal) return null;
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    if (showModal) {
+      setIsMounted(true);
+    } else {
+      const timer = setTimeout(() => setIsMounted(false), 200); // match transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [showModal]);
+
+  if (!isMounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px] relative">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
+        showModal ? "bg-black/50" : "bg-transparent pointer-events-none"
+      }`}
+    >
+      <div
+        className={`relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-6 min-w-[300px] max-w-sm w-full transform transition-all duration-300 ${
+          showModal ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"
+        }`}
+      >
+        {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition"
           onClick={() => setShowModal(false)}
-          aria-label="Close modal"
+          aria-label="Close"
         >
-          &times;
+          <X size={20} />
         </button>
-        <h2 className="text-lg font-semibold mb-2">User Profile</h2>
-        <p className="text-gray-700 mb-4">Hello, {firstName}!</p>
+
+        {/* Title */}
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">User Profile</h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-4">Hello, {firstName}!</p>
+
+        {/* Nav Links */}
         <nav className="flex flex-col gap-2">
           <a
             href="/dashboard/create-problem"
-            className="block px-4 py-2 rounded hover:bg-blue-50 text-blue-700 font-medium transition-colors"
             onClick={() => setShowModal(false)}
+            className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
           >
-            Create Program
+            ➕ Create Problem
           </a>
           <a
             href="/dashboard/problem"
-            className="block px-4 py-2 rounded hover:bg-blue-50 text-blue-700 font-medium transition-colors"
             onClick={() => setShowModal(false)}
+            className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
           >
-            All Problems
+            📄 All Problems
           </a>
           <a
             href="/dashboard/solution"
-            className="block px-4 py-2 rounded hover:bg-blue-50 text-blue-700 font-medium transition-colors"
             onClick={() => setShowModal(false)}
+            className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
           >
-            All Solutions
+            💡 All Solutions
           </a>
         </nav>
       </div>

@@ -7,15 +7,16 @@ interface ProtectedLayoutProps {
 };
 
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-  return ( 
-    <div className="h-screen">
+  return (
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex flex-grow">
-        <main className="bg-gray-50 w-full">{children}</main>
+        {/* <Sidebar /> */}
+        <main className=" w-full flex-1 flex flex-col">{children}</main>
       </div>
       <Footer />
     </div>
-   );
+  );
 }
 
 export default ProtectedLayout;
