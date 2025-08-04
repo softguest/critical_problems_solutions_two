@@ -40,7 +40,7 @@ const FormNewProblem = ({ data }: FormNewProblemProbs ) => {
       const response = await axios.post('/api/problem', formData);
 
       if (response.status === 200) {
-        router.push(`/admin/problem/${response.data.newProblem.id}`);
+        router.push(`/dashboard/problem/${response.data.newProblem.id}`);
       }
     } catch (error) {
       console.error(error);
