@@ -1,64 +1,93 @@
-import { FC} from 'react';
-import { auth } from '@/auth';
-import Solutions from '@/components/Solutions';
-import FormSolution from '@/components/form-solutions';
-import { db } from '@/lib/db';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+"use client";
 
-interface ProblemDetailPageProps {
-  params: {
-    id: string;
-  };
-}
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { EditorRenderer } from "@/components/EditorRenderer";
+import type { EditorContent } from "@/types/editor";
 
-const ProblemDetailPage: FC<ProblemDetailPageProps> = async ({ params }) => {
-  const session = await auth();
-  const problem = await db.problem.findFirst({
-    where: {
-      id: params.id,
-    },
-    include: {
-      author: true,
-    },
-  });
+type Problem = {
+  id: string;
+  title: string;
+  content: string;
+  fileUrl: string;
+};
+
+type Message = {
+  role: "user" | "ai";
+  content: string;
+};
+
+export default function ProblemDetailPage() {
+  const { id } = useParams();
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [activeDiv, setActiveDiv] = useState(1);
+  const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+
+        // Always fetch subject for preview
+        const problemRes = await fetch(`/api/problem/${id}`);
+        const problemData = await problemRes.json();
+        setProblem(problemData);
+      } catch (err) {
+        console.error("Failed to load problem detail:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
+      </div>
+    );
+  }
+
+  let editorBlocks: EditorContent["blocks"] = [];
+  if (problem?.content) {
+    try {
+      const parsed: EditorContent = typeof problem.content === "string"
+        ? JSON.parse(problem.content)
+        : problem.content;
+      editorBlocks = parsed.blocks;
+    } catch (error) {
+      console.error("Failed to parse subject content:", error);
+    }
+  }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      <div className='mb-6'>
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/80 transition">
-              Add Solution
-            </button>
-          </DialogTrigger>
+    <div className={`transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
+      <div className="max-w-8xl mx-auto py-6 space-y-6">
+        {/* <div className="flex justify-between gap-4 mb-4">
+        </div> */}
 
-          {/* Modal Content */}
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Submit a Solution</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              <FormSolution problemId={params.id} data={session} />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <h1 className="text-3xl font-bold">{problem?.title}</h1>
-      <p>
-        Written by: {problem?.author?.firstName}{' '}
-        <span>{problem?.author?.lastName}</span>
-      </p>
-      <div className="mt-4">{problem?.content}</div>
-
-      <Solutions problemId={params.id} />
-
-      <div className="mt-6">
-        {/* Modal Trigger */}
-        
+        {/* Tabs Content */}
+        <div>
+          {activeDiv === 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">{problem?.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {problem?.fileUrl && <img src={problem?.fileUrl} className="w-full mb-4" />}
+                <EditorRenderer blocks={editorBlocks} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default ProblemDetailPage;
+}

@@ -1,42 +1,56 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-import Paragraph from '@editorjs/paragraph';
+import React, { useEffect, useRef } from 'react';
+import EditorJS, { OutputData, API } from '@editorjs/editorjs';
+import { EDITOR_JS_TOOLS } from './tools/Tool';
 
 interface EditorProps {
-  onChange: (data: any) => void;
+  data: OutputData | null;
+  onChange: (data: OutputData) => void;
 }
 
-export default function Editor({ onChange }: EditorProps) {
+const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
   const editorRef = useRef<EditorJS | null>(null);
-  const holderRef = useRef<HTMLDivElement>(null);
+  const holderId = 'editorjs-container';
+  const hasRenderedRef = useRef(false); // to avoid re-rendering the same content again
 
   useEffect(() => {
     if (!editorRef.current) {
-      editorRef.current = new EditorJS({
-        holder: holderRef.current!,
-        tools: {
-          header: Header,
-          list: List,
-          paragraph: Paragraph,
-        },
-        onChange: async () => {
-          const output = await editorRef.current!.save();
+      const editor = new EditorJS({
+        holder: holderId,
+        data: data ?? { blocks: [] },
+        autofocus: true,
+        tools: EDITOR_JS_TOOLS,
+        async onChange(api: API) {
+          const output = await api.saver.save();
           onChange(output);
         },
       });
+
+      editorRef.current = editor;
     }
 
     return () => {
-      if (editorRef.current && typeof editorRef.current.destroy === 'function') {
+      if (editorRef.current?.destroy) {
         editorRef.current.destroy();
         editorRef.current = null;
       }
     };
-  }, [onChange]);
+  }, []);
 
-  return <div ref={holderRef} className="border rounded-lg p-4" />;
-}
+  // Re-render content only once after initial mount (if needed)
+  useEffect(() => {
+    if (editorRef.current && data && !hasRenderedRef.current) {
+      editorRef.current.isReady
+        .then(() => {
+          editorRef.current?.render(data);
+          hasRenderedRef.current = true;
+        })
+        .catch((e) => console.error("EditorJS render failed", e));
+    }
+  }, [data]);
+
+  return <div id={holderId} className="border p-4 rounded min-h-[300px]" />;
+};
+
+export default Editor;

@@ -1,82 +1,92 @@
 'use client';
 
-import { FormData } from '@/types/problem';
-import axios from 'axios';
-import { Session } from 'next-auth';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, FormEvent, useState } from 'react';
-import ReactTextareaAutosize from 'react-textarea-autosize';
+import dynamic from 'next/dynamic';
+import { Session } from 'next-auth';
+import { OutputData } from '@editorjs/editorjs';
 
-const inputClass =
-  'w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300';
+type FormNewProblemProps = {
+  data: Session | null;
+};
 
-  type FormNewProblemProbs = {
-    data: Session | null;
-  }
+// Lazy load EditorJS
+const Editor = dynamic(() => import('@/components/Editor'), { ssr: false });
 
-const FormNewProblem = ({ data }: FormNewProblemProbs ) => {
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    content: '',
-  });
-  // const { data } = useSession();
+const FormNewProblem = ({ data }: FormNewProblemProps) => {
+  const [title, setTitle] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [content, setContent] = useState<OutputData>({ blocks: [] });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post('/api/problem', formData);
-
-      if (response.status === 200) {
-        router.push(`/admin/problem/${response.data.newProblem.id}`);
-      }
-    } catch (error) {
-      console.error(error);
+    if (!title.trim()) {
+      alert("Title is required");
+      return;
     }
-  };
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", JSON.stringify(content));
+      if (file) {
+        formData.append("file", file);
+      }
+
+      const res = await fetch("/api/problem", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const { newProblem } = await res.json();
+        router.push(`/dashboard/problem/${newProblem.id}`);
+      } else {
+        console.error("Failed to create problem");
+        alert("Error: Could not create problem");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Something went wrong while submitting");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <form className='max-w-md mx-auto p-4' onSubmit={handleSubmit}>
-      <div className='mb-4'>
+    <div className="flex justify-center max-w-4xl mx-auto p-4">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <input
-          type='text'
-          className={inputClass}
-          placeholder='Enter the title'
-          name='title'
-          value={formData.title}
-          onChange={handleChange}
+          type="text"
+          placeholder="Problem title"
+          className="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
-      </div>
-      <div className='mb-4'>
-        <ReactTextareaAutosize
-          minRows={5}
-          name='content'
-          className={inputClass}
-          placeholder='Enter the content'
-          value={formData.content}
-          onChange={handleChange}
+
+        <Editor
+          data={null}
+          onChange={(data) => setContent(data)}
         />
-      </div>
-      <button
-        disabled={!data?.user?.email}
-        type='submit'
-        className='bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring focus:border-blue-300 w-full disabled:bg-gray-400'
-      >
-        Submit
-      </button>
-    </form>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+
+        <button
+          type="submit"
+          disabled={!data?.user?.email || loading}
+          className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400 w-full"
+        >
+          {loading ? "Publishing..." : "Publish Problem"}
+        </button>
+      </form>
+    </div>
   );
 };
 

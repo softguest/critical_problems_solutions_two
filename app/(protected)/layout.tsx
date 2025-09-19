@@ -10,9 +10,11 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex flex-grow">
-        {/* <Sidebar /> */}
-        <main className=" w-full flex-1 flex flex-col">{children}</main>
+      <div className='container'>
+        <div className="flex flex-grow">
+          {/* <Sidebar /> */}
+          <main className="w-full flex-1 flex flex-col">{children}</main>
+        </div>
       </div>
       <Footer />
     </div>

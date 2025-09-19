@@ -119,17 +119,21 @@ model SearchQuery {
 }
 
 model Problem {
-  id            String    @id @default(cuid()) @map("_id")
-  title         String
-  content       String
-  author        User?     @relation(fields: [authorEmail], references: [email])
-  authorEmail   String?
-  createdAt     DateTime  @default(now())
-  embedding     Float[]  // store vector
-  solutions     Solution[]
-  questions     Question[]
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid()) @map("_id")
+  title       String
+  content     String?    
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  author      User?     @relation(fields: [authorEmail], references: [email])
+  authorEmail String?
+  createdAt   DateTime  @default(now())
+  embedding   Float[]  
+  solutions   Solution[]
+  questions   Question[]
+  updatedAt   DateTime @updatedAt
+  fileUrl     String?   // <- store Cloudinary file link
 }
+
 
 model Solution {
   id                String   @id @default(cuid()) @map("_id")
@@ -170,7 +174,6 @@ model ChatSession {
   @@index([userId])
 }
 
-
 model Question {
   id        String     @id @default(cuid()) @map("_id")
   content   String
@@ -179,6 +182,15 @@ model Question {
   userId    String
   user      User       @relation(fields: [userId], references: [id])
   createdAt DateTime   @default(now())
+}
+
+model Category {
+  id        String   @id @default(cuid()) @map("_id")
+  imageUrl  String?
+  name      String   @unique
+  categoryDescription String?
+  problems  Problem[]
+  createdAt DateTime @default(now())
 }
 
 
