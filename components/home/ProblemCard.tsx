@@ -1,8 +1,9 @@
 import { Problem, User, Category } from "@prisma/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User as UserIcon } from "lucide-react";
+import { CalendarCheck, Clock, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProblemCardProps {
   problem: Problem & {
@@ -23,6 +24,7 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
                 <h3 className="font-semibold text-lg leading-tight hover:text-primary transition-colors line-clamp-2">
                   {problem.title}
                 </h3>
+                <hr />
               {problem.category && (
                 <Badge variant="secondary" className="w-fit">
                   {problem.category.name}
@@ -41,9 +43,15 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <UserIcon className="h-3 w-3" />
-                <span>{problem?.author?.firstName + " " + problem?.author?.lastName}</span>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-1">
+                  <UserIcon className="h-4 w-4 mr-2" />
+                  <span>{problem?.author?.firstName + " " + problem?.author?.lastName}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <CalendarCheck className="h-4 w-4 mr-2" />
+                  <span className="text-muted-foreground font-italic ">{new Date(problem.createdAt).toLocaleDateString()}</span>
+                </div>
               </div>
               {problem.readTime && (
                 <div className="flex items-center space-x-1">
@@ -52,7 +60,14 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
                 </div>
               )}
             </div>
-            <span>{new Date(problem.createdAt).toLocaleDateString()}</span>
+            
+            <Image
+              src={problem?.fileUrl ?? "/resource/problem.jpg"}
+              alt={problem.title}
+              width={50}
+              height={50}
+              className="rounded-full object-cover w-12 h-12"
+            />
           </div>
         </CardContent>
       </Card>
