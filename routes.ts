@@ -6,8 +6,16 @@
 export const publicRoutes = [
   "/",
   "/auth/new-verification",
-  "/aboutus"
+  "/aboutus",
+  "/problems",
+  "/categories",
+  "/contact",
+  "/privacy",
+  "/terms",
 ];
+
+// Add regex-style checks for dynamic routes
+ export const dynamicPublicRoutes = [/^\/categories\/[^/]+$/, /^\/problems\/[^/]+$/];
 
 /**
  * An array of routes that are used for authentication

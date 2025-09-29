@@ -7,6 +7,7 @@ import {
   apiAuthPrefix,
   authRoutes,
   publicRoutes,
+  dynamicPublicRoutes
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
@@ -18,6 +19,11 @@ export default auth((req) => {
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isDynamicPublicRoute = dynamicPublicRoutes.some((pattern) => pattern.test(nextUrl.pathname));
+
+  if (isPublicRoute || isDynamicPublicRoute) {
+    return null;
+  }
 
   if (isApiAuthRoute) {
     return null;
