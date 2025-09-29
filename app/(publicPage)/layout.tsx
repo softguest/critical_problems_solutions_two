@@ -25,7 +25,7 @@ const PublicLayout = ({ children }: ProtectedLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className='container'>
+      <div className=''>
         <div className="flex flex-grow">
           <main className="w-full flex-1 flex flex-col">{children}</main>
         </div>

@@ -76,7 +76,7 @@ export const Header = () => {
         <div className="flex items-center space-x-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-white"></div>
+            <div className="h-8 w-8 rounded-full bg-white"></div> <span className="text-white font-bold">CPS</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -149,7 +149,7 @@ export const Header = () => {
         {/* Drawer Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/20">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-white"></div>
+            <div className="h-8 w-8 rounded-full bg-white"></div> <span className="text-white font-bold">CPS</span>
           </Link>
           <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
             <X className="h-6 w-6" />
