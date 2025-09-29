@@ -93,7 +93,7 @@ export default function ChatComponent() {
   };
 
   return (
-    <div className="md:flex bg-white text-black dark:bg-zinc-900 dark:text-white font-sans overflow-x-hidden">
+    <div className="md:flex bg-gradient-to-br from-slate-100 to-slate-200 text-black dark:bg-zinc-900 dark:text-white font-sans overflow-x-hidden">
       {/* Backdrop for mobile sidebar */}
       {sidebarOpen && (
         <div
@@ -116,140 +116,161 @@ export default function ChatComponent() {
       <div className="flex relative">
         {/* Sidebar */}
         <div
-          className={`fixed md:static z-10 top-0 left-0 h-full bg-zinc-800 border-r border-zinc-700 w-64 p-4 transform transition-transform duration-300 ease-in-out ${
+          className={`fixed md:static z-30 top-0 left-0 h-full bg-white dark:bg-zinc-800 shadow-lg border-r w-64 p-4 transform transition-transform duration-300 ease-in-out ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 md:block`}
-        >
-          <nav className="mb-6">
-            <h2 className="text-sm font-semibold uppercase text-zinc-400 mb-3">Navigation</h2>
-            <div className="flex flex-col gap-2">
-              <a href="/dashboard/create-problem" className="text-sm px-3 py-2 rounded-md hover:bg-zinc-700 text-zinc-100">➕ Create Problem</a>
-              <a href="/dashboard/problem" className="text-sm px-3 py-2 rounded-md hover:bg-zinc-700 text-zinc-100">📄 All Problems</a>
-              <a href="/dashboard/solution" className="text-sm px-3 py-2 rounded-md hover:bg-zinc-700 text-zinc-100">💡 All Solutions</a>
-            </div>
+        > 
+          <nav className="flex flex-col gap-2 border-b pb-4 mb-4">
+            <a
+              href="/dashboard/create-problem"
+              // onClick={() => setShowModal(false)}
+              className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
+            >
+              ➕ Create Problem
+            </a>
+            <a
+              href="/dashboard/problem"
+              // onClick={() => setShowModal(false)}
+              className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
+            >
+              📄 All Problems
+            </a>
+            <a
+              href="/dashboard/solution"
+              // onClick={() => setShowModal(false)}
+              className="block px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors font-medium"
+            >
+              💡 All Solutions
+            </a>
           </nav>
 
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-sm font-semibold uppercase text-zinc-400">Chats</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold">Chats</h2>
             <button
               onClick={handleNewSession}
-              className="text-xs text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700"
             >
-              + New
+              + New Chat
             </button>
           </div>
 
-          <div className="space-y-2">
-            {sessions.map((s) => (
-              <div
-                key={s.id}
-                className={`flex items-center justify-between p-2 rounded-md text-sm cursor-pointer ${
-                  selectedSessionId === s.id ? "bg-zinc-700" : "hover:bg-zinc-800"
-                }`}
-                onClick={() => {
-                  setSelectedSessionId(s.id);
-                  setSidebarOpen(false);
-                }}
-              >
-                <div className="truncate w-[75%] text-zinc-100">{s.title}</div>
+          {sessions.map((s) => (
+            <div
+              key={s.id}
+              className={`flex items-center justify-between p-2 rounded cursor-pointer text-sm ${
+                selectedSessionId === s.id
+                  ? "bg-blue-100 dark:bg-zinc-700"
+                  : "hover:bg-gray-100 dark:hover:bg-zinc-700"
+              }`}
+              onClick={() => {
+                setSelectedSessionId(s.id);
+                setSidebarOpen(false);
+              }}
+            >
+              <div className="flex items-center gap-2 w-[75%] truncate">
+                <MessageSquare size={18} className="text-blue-500 shrink-0" />
+                <span className="truncate">{s.title}</span>
+              </div>
+              <div className="relative group">
                 <button
+                  className="text-gray-600 hover:text-black p-1"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const confirmDelete = confirm("Delete this session?");
-                    if (confirmDelete) {
-                      fetch(`/api/chat/sessions/${s.id}`, { method: "DELETE" }).then(() => {
+                    const menu = document.getElementById(`menu-${s.id}`);
+                    if (menu) menu.classList.toggle("hidden");
+                  }}
+                >
+                  <MoreVertical size={16} />
+                </button>
+                <div
+                  id={`menu-${s.id}`}
+                  className="absolute right-0 mt-1 z-10 bg-white dark:bg-zinc-900 border rounded shadow hidden"
+                >
+                  <button
+                    className="px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-zinc-800 w-full text-left"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const confirmDelete = confirm("Delete this session?");
+                      if (!confirmDelete) return;
+
+                      try {
+                        await fetch(`/api/chat/sessions/${s.id}`, {
+                          method: "DELETE",
+                        });
                         setSessions((prev) => prev.filter((sess) => sess.id !== s.id));
                         if (selectedSessionId === s.id) {
                           setSelectedSessionId(null);
                           setChat([]);
                         }
-                      });
-                    }
-                  }}
-                  className="text-xs text-red-400 hover:text-red-300"
-                >
-                  ✕
-                </button>
+                      } catch (err) {
+                        console.error("Error deleting session:", err);
+                        alert("Could not delete session.");
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        </div> 
-
+            </div>
+          ))}
+        </div>
 
         {/* Chat UI */}
         <div className="flex-1 flex flex-col max-w-4xl mx-auto p-4 relative">
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2 pb-28">
-          {chat.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className="max-w-[80%] flex gap-3">
-                {msg.role === "ai" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-800 text-white flex items-center justify-center font-bold text-xs">AI</div>
-                )}
-                <div
-                  className={`rounded-xl px-4 py-3 text-sm border border-zinc-700 shadow-sm whitespace-pre-wrap ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white ml-auto"
-                      : "bg-zinc-800 text-zinc-100 font-mono"
-                  }`}
-                >
-                  {msg.content}
-                  <div className="text-[10px] text-zinc-400 mt-1 text-right">{formatTime(msg.createdAt)}</div>
+            {chat.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className="flex max-w-[80%] gap-3 items-start">
+                  {msg.role === "ai" && (
+                    <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm">AI</div>
+                  )}
+                  <div
+                    className={`rounded-2xl px-4 py-3 text-sm border shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-blue-500 text-white ml-auto"
+                        : "bg-zinc-100 dark:bg-zinc-700 text-black dark:text-white mr-auto"
+                    }`}
+                  >
+                    <div>{msg.content}</div>
+                    {/* <div className="text-xs text-gray-200 mt-1 text-right">{formatTime(msg.createdAt)}</div> */}
+                  </div>
+                  {msg.role === "user" && (
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">U</div>
+                  )}
                 </div>
-                {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">U</div>
-                )}
               </div>
-            </div>
-          ))}
-
+            ))}
 
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-zinc-400 font-mono animate-pulse">
-                <div className="w-8 h-8 rounded-full bg-blue-800 text-white flex items-center justify-center font-bold text-xs">AI</div>
-                <span>AI is typing<span className="animate-bounce">...</span></span>
+              <div className="flex items-center gap-2 text-sm text-gray-500 italic animate-pulse">
+                <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm">AI</div>
+                <span>AI is typing...</span>
               </div>
             )}
-
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input area: center if no messages, bottom if messages */}
-          {chat.length === 0 ? (
-            <div className="fixed w-[80%] bg-zinc-900 border-t border-zinc-700 px-4 py-3 flex items-center rounded-xl gap-2">
-              <input
-                className="flex-1 bg-zinc-800 text-white text-sm px-4 py-2 rounded-md border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                placeholder="Ask your question..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={loading || !input.trim() || !selectedSessionId}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-40"
-              >
-                Send
-              </button>
-            </div>
-
-          ) : (
-            <div className="flex items-center bottom-20 w-full bg-zinc-900 border-t border-zinc-700 px-4 py-3 flex items-center rounded-xl gap-2">
-              <input
-                className="flex-1 bg-zinc-800 text-white text-sm px-4 py-2 rounded-md border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                placeholder="Ask your question..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={loading || !input.trim() || !selectedSessionId}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-40"
-              >
-                Send
-              </button>
-            </div>
-          )}
+          {/* Input area */}
+          <div
+            className="flex gap-2 items-center w-full px-4 absolute left-0 right-0"
+            style={{ bottom: 20 }}
+          >
+            <input
+              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none dark:bg-zinc-800"
+              placeholder="Type your question..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim() || !selectedSessionId}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+            >
+              {loading ? "Sending..." : "Send"}
+            </button>
+          </div>
         </div>
       </div> 
 

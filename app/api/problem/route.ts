@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -20,6 +21,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const title = formData.get("title") as string;
     const content = JSON.parse(formData.get("content") as string);
+    const categoryId = formData.get("categoryId") as string | null;
     const file = formData.get("file") as File | null;
 
     // Convert EditorJS content → plain text
@@ -51,15 +53,15 @@ export async function POST(req: Request) {
       fileUrl = uploadResult.secure_url;
     }
 
-    // Store problem in DB
+    // Store problem in DB (include categoryId if provided)
     const newProblem = await db.problem.create({
       data: {
         title,
         content: JSON.stringify(content),
         authorEmail: session.user.email,
         embedding,
-        // extend your schema with a "fileUrl String?" if you want this stored
         ...(fileUrl && { fileUrl }),
+        ...(categoryId && { categoryId }), // ✅ attach category
       },
     });
 
@@ -69,6 +71,34 @@ export async function POST(req: Request) {
     return Response.json({ message: "Something went wrong!" }, { status: 500 });
   }
 }
+
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const cursor = searchParams.get("cursor"); // last problem id
+  const limit = parseInt(searchParams.get("limit") || "6");
+
+  const problems = await db.problem.findMany({
+    take: limit + 1, // one extra to check if more
+    skip: cursor ? 1 : 0, // skip cursor itself
+    cursor: cursor ? { id: cursor } : undefined,
+    orderBy: { createdAt: "desc" },
+    include: { category: true },
+  });
+
+  let nextCursor: string | null = null;
+  if (problems.length > limit) {
+    const nextItem = problems.pop();
+    nextCursor = nextItem?.id || null;
+  }
+
+  return NextResponse.json({
+    problems,
+    nextCursor,
+  });
+}
+
+
 
 // Helper function
 function extractTextFromEditorJS(content: any): string {

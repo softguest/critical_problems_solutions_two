@@ -32,37 +32,27 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 relative">
+      <CardContent className="pt-0">
         <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
-          {problem.excerpt ??
+          {/* {problem.excerpt ??
             (problem.content
               ? problem.content.slice(0, 120) + "..."
-              : "No description available")}
+              : "No description available")} */}
         </p>
-        <div className="flex space-x-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <UserIcon className="h-3 w-3" />
-                <span>{problem.authorEmail ?? "Anonymous"}</span>
-              </div>
-              {problem.readTime && (
-                <div className="flex items-center space-x-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{problem.readTime} min read</span>
-                </div>
-              )}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <UserIcon className="h-3 w-3" />
+              <span>{problem.author?.firstName ?? "Anonymous"}</span>
             </div>
-            {/* <span>{new Date(problem.createdAt).toLocaleDateString()}</span> */}
+            {problem.readTime && (
+              <div className="flex items-center space-x-1">
+                <Clock className="h-3 w-3" />
+                <span>{problem.readTime} min read</span>
+              </div>
+            )}
           </div>
-          {/* Problem image at bottom right */}
-          {problem.fileUrl && (
-            <img
-              src={problem.fileUrl}
-              alt={problem.title}
-              className="absolute bottom-3 right-3 w-14 h-14 object-cover rounded-full shadow-md border-2 border-white"
-            />
-          )}
+          <span>{new Date(problem.createdAt).toLocaleDateString()}</span>
         </div>
       </CardContent>
     </Card>

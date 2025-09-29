@@ -53,3 +53,11 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+export async function GET() {
+  const categories = await db.category.findMany({
+    select: { id: true, name: true, categoryDescription: true, imageUrl: true, createdAt: true },
+  });
+  return NextResponse.json({ categories });
+}

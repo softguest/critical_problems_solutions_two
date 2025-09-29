@@ -13,18 +13,26 @@ export default async function Home() {
   const problems = await db.problem.findMany({
     orderBy: { createdAt: "desc" },
     take: 6,
+    include: {
+      category: true, 
+    },
   });
 
   // ✅ Fetch categories from the database
   const categories = await db.category.findMany({
-    orderBy: { name: "asc" },
-    take: 8, // adjust as needed
+    orderBy: { createdAt: "desc" },
+    take: 8,
+    include: {
+      _count: {
+        select: { problems: true }
+      }
+    }
   });
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative pt-32 pb-48 px-4 overflow-hidden">
+      <section className="relative pt-32 pb-48 overflow-hidden">
         {/* background blobs */}
         <style jsx>{`
           .hero-blob {
@@ -51,7 +59,7 @@ export default async function Home() {
             <circle cx="900" cy="400" r="120" fill="#f472b6" fillOpacity="0.10" className="hero-blob blob3" />
             <circle cx="400" cy="500" r="100" fill="#34d399" fillOpacity="0.10" className="hero-blob blob4" />
             <circle cx="1300" cy="500" r="80" fill="#fbbf24" fillOpacity="0.10" className="hero-blob blob5" />
-          </svg>
+          </svg>  
         </div>
 
         {/* Hero content */}
@@ -82,19 +90,27 @@ export default async function Home() {
       </section>
 
         {/* Categories Section */}
-        <section className="py-12 px-4 bg-muted/30 rounded-2xl">
+        <section className="py-12 bg-muted/30 rounded-2xl">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-center">Problem Categories</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {categories.map((category) => (
-                <CategoryCard key={category.id} category={category} />
+                <CategoryCard 
+                  key={category.id}
+                  //@ts-ignore
+                  category={{
+                    ...category,
+                    categoryDescription: category.categoryDescription ?? undefined,
+                    problemCount: category._count.problems // Pass problem count to the card
+                  }}
+                />
               ))}
             </div>
           </div>
         </section>
 
       {/* Latest Problems Section */}
-      <section className="py-12 px-4">
+      <section className="py-12">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold">Latest Problems</h2>

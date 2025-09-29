@@ -4,15 +4,16 @@ import { useState } from "react";
 import UserModal from "../UserModal";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import UserCircleButton from "../UserCircleButton";
+import { Settings } from "lucide-react";
 
 const UserModalHouse = () => {
   const [showModal, setShowModal] = useState(false);
   const session = useCurrentUser();
-
+  
   return (
     <div className="p-2">
       {/* Trigger button */}
-      <UserCircleButton onClick={() => setShowModal(true)} />
+      <Settings onClick={() => setShowModal(true)} className="cursor-pointer"/>
 
       {/* Modal */}
       <UserModal

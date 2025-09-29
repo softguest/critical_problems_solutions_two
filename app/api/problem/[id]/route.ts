@@ -3,25 +3,18 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "@/lib/db";
-import { auth } from "@/auth"; // <-- Import auth
+import { auth } from "@/auth";
 
-
-// GET - Fetch a post only if the user has subscribed
+// GET - fetch a single problem
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth();
-
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = session.user.id;
-  const problemId = params.id;
-
   const problem = await db.problem.findUnique({
-    where: { id: problemId },
-    include: {
-      author: true,
-    },
+    where: { id: params.id },
+    include: { author: true },
   });
 
   if (!problem) {
@@ -31,37 +24,35 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(problem);
 }
 
-// PUT - Update a post
+// PUT - update problem
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const formData = await req.formData();
   const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
+  const categoryId = formData.get("categoryId") as string;
+  const contentRaw = formData.get("content") as string;
+  const content = contentRaw ? JSON.parse(contentRaw) : { blocks: [] };
   const file = formData.get("file") as File | null;
 
   const problem = await db.problem.findUnique({
     where: { id: params.id },
-    include: {
-      author: true,
-    },
+    include: { author: true },
   });
 
   if (!problem) {
     return NextResponse.json({ error: "Problem not found" }, { status: 404 });
   }
 
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   if (problem.authorEmail !== session.user.email) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-
   let newImageUrl = problem.fileUrl;
 
-  // Handle image upload
   if (file && file.name) {
     const uploadDir = path.join(process.cwd(), "public", "uploads");
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -74,12 +65,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     newImageUrl = `/uploads/${fileName}`;
 
-    // Delete old image
     if (problem.fileUrl) {
-      const oldImagePath = path.join(process.cwd(), "public", problem.fileUrl.replace(/^\/+/, ''));
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
+      const oldImagePath = path.join(process.cwd(), "public", problem.fileUrl.replace(/^\/+/, ""));
+      if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
     }
   }
 
@@ -87,7 +75,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     where: { id: params.id },
     data: {
       title,
-      content,
+      content,         // ✅ JSON type
+      categoryId,      // update category
       fileUrl: newImageUrl,
     },
   });

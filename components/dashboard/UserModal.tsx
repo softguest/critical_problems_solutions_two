@@ -25,7 +25,7 @@ const UserModal: React.FC<UserModalProps> = ({ showModal, setShowModal, firstNam
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
+      className={`fixed inset-0 z-0 flex items-center justify-center transition-all duration-200 ${
         showModal ? "bg-black/50" : "bg-transparent pointer-events-none"
       }`}
     >

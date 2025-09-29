@@ -121,7 +121,7 @@ model SearchQuery {
 model Problem {
   id          String    @id @default(cuid()) @map("_id")
   title       String
-  content     String?    
+  content     Json?     // 👈 better for EditorJS  
   category    Category? @relation(fields: [categoryId], references: [id])
   categoryId  String?
   author      User?     @relation(fields: [authorEmail], references: [email])

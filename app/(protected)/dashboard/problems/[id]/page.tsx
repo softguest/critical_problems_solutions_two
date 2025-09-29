@@ -69,11 +69,7 @@ export default function ProblemDetailPage() {
 
   return (
     <div className={`transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
-      <div className="max-w-8xl mx-auto py-6 space-y-6">
-        {/* <div className="flex justify-between gap-4 mb-4">
-        </div> */}
-
-        {/* Tabs Content */}
+      <div className="container mx-auto py-6 space-y-6">
         <div>
           {activeDiv === 1 && (
             <Card>

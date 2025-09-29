@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Category {
   id: string;
@@ -22,7 +23,7 @@ export default function CategoriesPage() {
     setLoading(true);
     const res = await fetch("/api/categories");
     const data = await res.json();
-    setCategories(data);
+    setCategories(data.categories || []); 
     setLoading(false);
   }
 
@@ -73,22 +74,35 @@ export default function CategoriesPage() {
                 <tr key={cat.id} className="hover:bg-gray-50">
                   <td className="p-3 border-b">
                     {cat.imageUrl ? (
-                      <img
-                        src={cat.imageUrl}
+                      <Image
+                        src={cat.imageUrl || "/placeholder.png"} // fallback if null
                         alt={cat.name}
-                        className="h-12 w-12 rounded-md object-cover"
+                        width={48}
+                        height={48}
+                        className="rounded-md object-cover"
                       />
                     ) : (
                       <span className="text-gray-400">No image</span>
                     )}
                   </td>
-                  <td className="p-3 border-b font-medium">{cat.name}</td>
+                  <td className="p-3 border-b font-medium">{cat?.name}</td>
                   <td className="p-3 border-b text-gray-600">
-                    {cat.categoryDescription || "—"}
+                      {cat?.categoryDescription?.split(" ").slice(0, 10).join(" ")}
+                      {/* {cat?.categoryDescription?.split(" ").length > 10 && "..."} */}
                   </td>
-                  <td className="p-3 border-b">
+                  {/* <td className="p-3 border-b">
                     {new Date(cat.createdAt).toLocaleDateString()}
+                  </td> */}
+                  <td className="p-3 border-b">
+                    {cat.createdAt
+                      ? new Date(cat.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "—"}
                   </td>
+
                   <td className="p-3 border-b text-right space-x-2">
                     <button
                       onClick={() => handleDelete(cat.id)}

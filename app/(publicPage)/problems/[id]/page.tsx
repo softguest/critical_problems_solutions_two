@@ -34,29 +34,11 @@ export default function ProblemDetailPage() {
   useEffect(() => {
     const loadAllData = async () => {
       try {
-        // Check subscription
-        // const subRes = await fetch(`/api/problem/${id}/is-subscribed`);
-        // const subData = await subRes.json();
-        // setSubscribed(subData.subscribed);
 
         // Always fetch subject for preview
         const problemRes = await fetch(`/api/problem/${id}`);
         const problemData = await problemRes.json();
         setProblem(problemData);
-
-        // if (!subData.subscribed) return;
-
-        // Fetch chat + similar
-        // const [chatRes, similarRes] = await Promise.all([
-        //   // fetch(`/api/problem/${id}/chat-history`),
-        //   fetch(`/api/problem/${id}/similar`)
-        // ]);
-
-        // const chatData = await chatRes.json();
-        // const similarData = await similarRes.json();
-
-        // setMessages(chatData);
-        // setSimilarProblems(similarData);
       } catch (err) {
         console.error("Failed to load problem detail:", err);
       } finally {
@@ -89,20 +71,6 @@ export default function ProblemDetailPage() {
     }
   };
 
-  // const handleSubscribe = async () => {
-  //   setSubscribing(true);
-  //   try {
-  //     const res = await fetch(`/api/problem/${id}/subscribe`, { method: "POST" });
-  //     const data = await res.json();
-  //     if (res.ok) setSubscribed(true);
-  //     else alert(data.error || "Subscription failed");
-  //   } catch (err) {
-  //     alert("An error occurred while subscribing.");
-  //   } finally {
-  //     setSubscribing(false);
-  //   }
-  // };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -125,40 +93,15 @@ export default function ProblemDetailPage() {
 
   // Slice 30% of blocks if not subscribed
   const previewBlocks = !subscribed
-    ? editorBlocks.slice(0, Math.ceil(editorBlocks.length * 0.4))
+    ? editorBlocks.slice(0, Math.ceil(editorBlocks.length * 0.5))
     : editorBlocks;
 
   return (
     <div className={`py-4 transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
       <div className="max-w-8xl mx-auto space-y-6">
-        <div className="flex justify-between gap-4 mb-4">
-          <button
-            className={`px-4 py-2 rounded w-full ${activeDiv === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setActiveDiv(1)}
-          >
-            Subject Content
-          </button>
-          {subscribed && (
-            <>
-              <button
-                className={`px-4 py-2 rounded w-full ${activeDiv === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                onClick={() => setActiveDiv(2)}
-              >
-                Ask Any Question
-              </button>
-              <button
-                className={`px-4 py-2 rounded w-full ${activeDiv === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                onClick={() => setActiveDiv(3)}
-              >
-                Similar Subjects
-              </button>
-            </>
-          )}
-        </div>
 
         {/* Tabs Content */}
         <div>
-          {activeDiv === 1 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">{problem?.title}</CardTitle>
@@ -181,63 +124,6 @@ export default function ProblemDetailPage() {
                 )}
               </CardContent>
             </Card>
-          )}
-
-          {activeDiv === 2 && subscribed && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Ask about this subject</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                  {messages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={`p-2 rounded-md ${
-                        msg.role === "user"
-                          ? "bg-blue-100 text-blue-900 ml-auto max-w-[75%]"
-                          : "bg-gray-100 text-gray-800 mr-auto max-w-[75%]"
-                      }`}
-                    >
-                      {msg.content}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask a question about the Subject..."
-                    className="flex-grow"
-                  />
-                  <Button onClick={handleSend}>Send</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeDiv === 3 && subscribed && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Similar Subjects</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {similarProblems.length === 0 ? (
-                  <p className="text-muted-foreground">No similar Problems found.</p>
-                ) : (
-                  similarProblems.map((problem) => (
-                    <a
-                      key={problem.id}
-                      href={`/subjects/${problem.id}`}
-                      className="block p-2 rounded hover:bg-muted text-blue-600"
-                    >
-                      {problem?.title}
-                    </a>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>
