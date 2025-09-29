@@ -25,8 +25,6 @@ export default function ProblemDetailPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [similarProblems, setSimilarProblems] = useState<{ id: string; title: string }[]>([]);
-  const [activeDiv, setActiveDiv] = useState(1);
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [loading, setLoading] = useState(true);

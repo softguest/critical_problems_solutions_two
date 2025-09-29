@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/auth";
 
 // GET - fetch a single problem
+// GET - fetch a single problem
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth();
   if (!session) {
@@ -21,8 +22,22 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: "Problem not found" }, { status: 404 });
   }
 
-  return NextResponse.json(problem);
+  // ✅ Ensure content is always parsed
+  let parsedContent = problem.content;
+  if (typeof parsedContent === "string") {
+    try {
+      parsedContent = JSON.parse(parsedContent);
+    } catch {
+      parsedContent = { blocks: [] }; // fallback if bad JSON
+    }
+  }
+
+  return NextResponse.json({
+    ...problem,
+    content: parsedContent,
+  });
 }
+
 
 // PUT - update problem
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {

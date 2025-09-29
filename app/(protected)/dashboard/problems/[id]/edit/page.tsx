@@ -182,6 +182,11 @@ import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { OutputData } from "@editorjs/editorjs";
 
+type Category = {
+  id: string;
+  name: string;
+};
+
 const Editor = dynamic(() => import('@/components/Editor'), { ssr: false });
 
 export default function EditPostPage() {
@@ -192,32 +197,56 @@ export default function EditPostPage() {
   const [content, setContent] = useState<OutputData | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const router = useRouter();
+
+  //   // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data.categories || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`/api/subjects/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch subject");
+        const res = await fetch(`/api/problems/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch problem");
 
         const data = await res.json();
         setTitle(data.title);
         setImageUrl(data.image);
 
-        // Only setContent if it's still null
-        setContent((prevContent) => {
-          if (prevContent) return prevContent;
-          return typeof data.content === "string" ? JSON.parse(data.content) : data.content;
-        });
+        // Always set from DB only if content is empty
+        if (!content) {
+          const parsedContent =
+            typeof data.content === "string" && (data.content.startsWith("{") || data.content.startsWith("["))
+              ? JSON.parse(data.content)
+              : data.content;
+
+          setContent(data.content); 
+          setSelectedCategory(data.categoryId || ""); // also restore category
+        }
       } catch (error) {
         console.error("fetchPost error:", error);
       }
     };
 
-    if (id && content === null) {
+    if (id) {
       fetchPost();
     }
-  }, [id, content]);
+  }, [id]);
+
 
 
   const handleEditorChange = (data: OutputData) => {
@@ -232,17 +261,18 @@ export default function EditPostPage() {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", JSON.stringify(content));
+    formData.append('categoryId', selectedCategory);
     if (image) {
       formData.append("file", image);
     }
 
-    const res = await fetch(`/api/subjects/${id}`, {
+    const res = await fetch(`/api/problems/${id}`, {
       method: "PUT",
       body: formData,
     });
 
     if (res.ok) {
-      router.push("/dashboard/writer");
+      router.push("/dashboard/problems");
     } else {
       const err = await res.text();
       console.error("Update failed", err);
@@ -250,16 +280,30 @@ export default function EditPostPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4">Edit Subject</h1>
-      <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
+    <div className="flex justify-center max-w-4xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Edit Problem</h1>
+      <form onSubmit={handleSubmit} className="space-y-4 w-full" encType="multipart/form-data">
         <input
-          className="w-full border p-2 rounded"
+          className="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post Title"
           required
         />
+
+         {/* Category */}
+         <select
+           value={selectedCategory}
+           onChange={(e) => setSelectedCategory(e.target.value)}
+           className="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+         >
+           <option value="">Select a category</option>
+           {categories.map((cat) => (
+             <option key={cat.id} value={cat.id}>
+               {cat.name}
+             </option>
+           ))}
+         </select>
 
         {imageUrl && (
           <div>
@@ -276,7 +320,7 @@ export default function EditPostPage() {
         />
 
         {content ? (
-          <Editor data={content} onChange={handleEditorChange} />
+          <Editor data={content} onChange={handleEditorChange}/>
         ) : (
           <p className="text-sm text-gray-500">Loading editor...</p>
         )}
