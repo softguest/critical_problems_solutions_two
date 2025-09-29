@@ -100,7 +100,7 @@ export default async function Home() {
                   //@ts-ignore
                   category={{
                     ...category,
-                    categoryDescription: category.categoryDescription ?? undefined,
+                    categoryDescription: category?.categoryDescription ?? null,
                     problemCount: category._count.problems // Pass problem count to the card
                   }}
                 />
