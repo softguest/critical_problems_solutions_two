@@ -15,46 +15,47 @@ interface ProblemCardProps {
 
 export const ProblemCard = ({ problem }: ProblemCardProps) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <Link href={`/problems/${problem.id}`}>
-              <h3 className="font-semibold text-lg leading-tight hover:text-primary transition-colors line-clamp-2">
-                {problem.title}
-              </h3>
-            </Link>
-            {problem.category && (
-              <Badge variant="secondary" className="w-fit">
-                {problem.category.name}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
-          {/* {problem.excerpt ??
-            (problem.content
-              ? problem.content.slice(0, 120) + "..."
-              : "No description available")} */}
-        </p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <UserIcon className="h-3 w-3" />
-              <span>{problem.author?.firstName ?? "Anonymous"}</span>
+    <Link href={`/problems/${problem.id}`} className="no-underline cursor-pointer">
+      <Card className="hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+                <h3 className="font-semibold text-lg leading-tight hover:text-primary transition-colors line-clamp-2">
+                  {problem.title}
+                </h3>
+              {problem.category && (
+                <Badge variant="secondary" className="w-fit">
+                  {problem.category.name}
+                </Badge>
+              )}
             </div>
-            {problem.readTime && (
-              <div className="flex items-center space-x-1">
-                <Clock className="h-3 w-3" />
-                <span>{problem.readTime} min read</span>
-              </div>
-            )}
           </div>
-          <span>{new Date(problem.createdAt).toLocaleDateString()}</span>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
+            {/* {problem.excerpt ??
+              (problem.content
+                ? problem.content.slice(0, 120) + "..."
+                : "No description available")} */}
+                {problem.category?.name ? `This problem belongs to the ${problem.category.name} category.` : "No category available"}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <UserIcon className="h-3 w-3" />
+                <span>{problem?.author?.firstName + " " + problem?.author?.lastName}</span>
+              </div>
+              {problem.readTime && (
+                <div className="flex items-center space-x-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{problem.readTime} min read</span>
+                </div>
+              )}
+            </div>
+            <span>{new Date(problem.createdAt).toLocaleDateString()}</span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };

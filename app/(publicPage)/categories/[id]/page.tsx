@@ -11,6 +11,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
     include: {
       problems: {
         orderBy: { createdAt: "desc" },
+        include: { category: true, author: true },
       },
     },
   });

@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { EditorRenderer } from "@/components/EditorRenderer";
 import type { EditorContent } from "@/types/editor";
 
@@ -25,8 +23,6 @@ export default function ProblemDetailPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +30,7 @@ export default function ProblemDetailPage() {
       try {
 
         // Always fetch subject for preview
-        const problemRes = await fetch(`/api/problem/${id}`);
+        const problemRes = await fetch(`/api/problems/${id}`);
         const problemData = await problemRes.json();
         setProblem(problemData);
       } catch (err) {
@@ -55,7 +51,7 @@ export default function ProblemDetailPage() {
     setInput("");
 
     try {
-      const res = await fetch(`/api/problem/${id}/chat`, {
+      const res = await fetch(`/api/problems/${id}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages }),
@@ -89,11 +85,6 @@ export default function ProblemDetailPage() {
     }
   }
 
-  // Slice 30% of blocks if not subscribed
-  const previewBlocks = !subscribed
-    ? editorBlocks.slice(0, Math.ceil(editorBlocks.length * 0.5))
-    : editorBlocks;
-
   return (
     <div className={`py-4 transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
       <div className="max-w-8xl mx-auto space-y-6">
@@ -106,20 +97,7 @@ export default function ProblemDetailPage() {
               </CardHeader>
               <CardContent>
                 {problem?.fileUrl && <img src={problem?.fileUrl} className="w-full mb-4" />}
-                <EditorRenderer blocks={previewBlocks} />
-
-                {!subscribed && (
-                  <div className="mt-6 text-center border-t pt-6">
-                    <p className="text-lg font-semibold mb-4">
-                      This subject is for subscribers only.
-                    </p>
-                    <Button 
-                    // onClick={handleSubscribe} 
-                    disabled={subscribing}>
-                      {subscribing ? "Subscribing..." : "Subscribe to Read Full Content"}
-                    </Button>
-                  </div>
-                )}
+                <EditorRenderer blocks={editorBlocks} />
               </CardContent>
             </Card>
         </div>

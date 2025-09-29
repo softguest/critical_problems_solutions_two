@@ -14,7 +14,8 @@ export default async function Home() {
     orderBy: { createdAt: "desc" },
     take: 6,
     include: {
-      category: true, 
+      category: true,
+      author: true
     },
   });
 
