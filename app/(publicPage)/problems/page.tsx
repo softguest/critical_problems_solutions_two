@@ -18,7 +18,7 @@ const Problems = async () => {
   return (
     <div className='relative overflow-hidden'>
         {/* Latest Problems Section */}
-        <section className="py-12">
+        <section className="container py-12">
             <div className=" mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-3xl font-bold">Latest Problems</h2>

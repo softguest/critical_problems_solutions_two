@@ -87,7 +87,7 @@ export default function ProblemDetailPage() {
 
   return (
     <div className={`py-4 transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
-      <div className="max-w-8xl mx-auto space-y-6">
+      <div className="container  mx-auto space-y-6">
 
         {/* Tabs Content */}
         <div>
