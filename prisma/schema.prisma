@@ -118,6 +118,16 @@ model SearchQuery {
       query String
 }
 
+model ChatSource {
+  id        String      @id @default(cuid()) @map("_id")
+  messageId String
+  problemId String
+  similarity Float
+
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  problem   Problem     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
 model Problem {
   id          String    @id @default(cuid()) @map("_id")
   title       String
@@ -127,9 +137,10 @@ model Problem {
   author      User?     @relation(fields: [authorEmail], references: [email])
   authorEmail String?
   createdAt   DateTime  @default(now())
-  embedding   Float[]  
+  embedding   Float[]
   solutions   Solution[]
   questions   Question[]
+  sources     ChatSource[]  // linked sources
   updatedAt   DateTime @updatedAt
   fileUrl     String?   // <- store Cloudinary file link
 }
@@ -138,7 +149,7 @@ model Problem {
 model Solution {
   id                String   @id @default(cuid()) @map("_id")
   title             String
-  content           String
+  content           Json
   createdAt         DateTime @default(now())
 
   author            User?   @relation(fields: [authorEmail], references: [email])
@@ -159,6 +170,7 @@ model ChatMessage {
   session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId   String
   
+  sources   ChatSource[]  // linked sources
   content   String
   createdAt DateTime @default(now())
 }

@@ -1,112 +1,80 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Session } from 'next-auth';
 import { OutputData } from '@editorjs/editorjs';
 
-type FormNewProblemProps = {
-  data: Session | null;
-};
-
-type Category = {
-  id: string;
-  name: string;
-};
-
-// Lazy load EditorJS
+// Lazy load the Editor to ensure SSR safety
 const Editor = dynamic(() => import('@/components/Editor'), { ssr: false });
 
-const FormNewProblem = ({ data }: FormNewProblemProps) => {
+export default function CreatePostPage() {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [content, setContent] = useState<OutputData>({ blocks: [] });
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [search, setSearch] = useState('');
   const router = useRouter();
 
-  // ...existing code...
-  const [search, setSearch] = useState(""); // Add this line
-
-  // ...existing code...
-
-
-  // Fetch categories on mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        if (res.ok) {
-          const data = await res.json();
-          setCategories(data.categories || []);
-        }
-      } catch (error) {
-        console.error('Failed to load categories:', error);
+    async function fetchCategories() {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data.categories || []);
       }
-    };
+    }
     fetchCategories();
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      alert('Title is required');
-      return;
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', JSON.stringify(content));
+    formData.append('categoryId', selectedCategory);
+    if (file) {
+      formData.append('file', file);
     }
 
-    if (!selectedCategory) {
-      alert('Please select a category');
-      return;
-    }
+    const res = await fetch('/api/problems', {
+      method: 'POST',
+      body: formData,
+    });
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', JSON.stringify(content));
-      formData.append('categoryId', selectedCategory);
-      if (file) {
-        formData.append('file', file);
-      }
-
-      const res = await fetch('/api/problem', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const { newProblem } = await res.json();
-        router.push(`/dashboard/problem/${newProblem.id}`);
-      } else {
-        console.error('Failed to create problem');
-        alert('Error: Could not create problem');
-      }
-    } catch (err) {
-      console.error('Submit error:', err);
-      alert('Something went wrong while submitting');
-    } finally {
-      setLoading(false);
+    if (res.ok) {
+      window.location.href = '/dashboard/problems';
+    } else {
+      console.error('Failed to submit subject');
     }
   }
 
   return (
-    <div className="flex justify-center max-w-4xl mx-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+    <div className="max-w-4xl px-2 mx-auto my-10">
+      <h1 className="text-2xl font-bold mb-4">Create New Problem</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="text"
-          placeholder="Problem title"
-          className="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          className="w-full border p-2 rounded"
+          placeholder="Problem Name"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          required
         />
 
-      {/* Category Dropdown */}
+        {/* Category Search and Select */}
+        <input
+          className="w-full border p-2 rounded"
+          placeholder="Search categories..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <select
+          className="w-full border p-2 rounded"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          required
         >
           <option value="">Select a category</option>
           {categories
@@ -120,24 +88,22 @@ const FormNewProblem = ({ data }: FormNewProblemProps) => {
             ))}
         </select>
 
-        <Editor data={null} onChange={(data) => setContent(data)} />
-
+        <Editor
+          data={null}
+          onChange={(data) => setContent(data)}
+        />
         <input
           type="file"
           accept="image/*"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-
         <button
           type="submit"
-          disabled={!data?.user?.email || loading}
-          className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400 w-full"
+          className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
-          {loading ? 'Publishing...' : 'Publish Problem'}
+          Publish Problems
         </button>
       </form>
     </div>
   );
-};
-
-export default FormNewProblem;
+}

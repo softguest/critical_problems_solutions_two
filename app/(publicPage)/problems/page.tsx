@@ -9,9 +9,9 @@ const Problems = async () => {
     // Fetch problems from the database
     const problems = await db.problem.findMany({
     orderBy: { createdAt: "desc" },
-    take: 6,
     include: {
       category: true,
+      author: true
     },
     });
 

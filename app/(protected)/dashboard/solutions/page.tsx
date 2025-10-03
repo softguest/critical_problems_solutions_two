@@ -27,8 +27,8 @@ const SolutionsPage = async () => {
               {solution.title.split(" ").length > 7 && "..."}
             </h4>
             <p className='mt-2 text-gray-600 line-clamp-3'>
-              {solution.content.split(" ").slice(0, 23).join(" ")}
-              {solution.content.split(" ").length > 23 && "..."}
+              {String(solution.content ?? "").split(" ").slice(0, 23).join(" ")}
+              {String(solution.content ?? "").split(" ").length > 23 && "..."}
             </p>
             <p>Published by: {solution.author?.firstName} {solution.author?.lastName}</p>
             <i>For Problem: {solution.Problem?.title}</i>

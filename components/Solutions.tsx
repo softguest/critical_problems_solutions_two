@@ -30,7 +30,7 @@ const Solutions: FC<SolutionsProps> = async ({ problemId }) => {
               </div>
             </div>
             <h3 className='text-2xl font-bold'>{solution.title}</h3>
-            <p>{solution.content}</p>
+            <p>{typeof solution.content === 'string' ? solution.content : JSON.stringify(solution.content)}</p>
           </li>
         ))}
       </div>
