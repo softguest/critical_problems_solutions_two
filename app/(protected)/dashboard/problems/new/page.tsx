@@ -2,12 +2,11 @@ import { auth } from '@/auth';
 import FormNewProblem from '@/components/form-new-problem'
 import React from 'react'
 
-const Dashboard = async () => {
-  const data = await auth();
+const Dashboard = () => {
 
   return (
     <div>
-        <FormNewProblem data={data} />
+        <FormNewProblem />
     </div>
   )
 }
