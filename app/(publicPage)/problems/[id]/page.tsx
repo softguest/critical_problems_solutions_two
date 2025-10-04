@@ -21,16 +21,13 @@ type Message = {
 export default function ProblemDetailPage() {
   const { id } = useParams();
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAllData = async () => {
       try {
-
-        // Always fetch subject for preview
-        const problemRes = await fetch(`/api/problems/${id}`);
+        // Always fetch problem for preview
+        const problemRes = await fetch(`/api/frontProblems/${id}`);
         const problemData = await problemRes.json();
         setProblem(problemData);
       } catch (err) {
@@ -42,28 +39,6 @@ export default function ProblemDetailPage() {
 
     loadAllData();
   }, [id]);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    const newMessage: Message = { role: "user", content: input };
-    const newMessages: Message[] = [...messages, newMessage];
-    setMessages(newMessages);
-    setInput("");
-
-    try {
-      const res = await fetch(`/api/problems/${id}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
-      });
-
-      if (!res.ok) throw new Error("Failed to get reply from AI.");
-      const { reply } = await res.json();
-      setMessages([...newMessages, { role: "ai", content: reply }]);
-    } catch (err) {
-      console.error("Chat error:", err);
-    }
-  };
 
   if (loading) {
     return (
@@ -88,8 +63,6 @@ export default function ProblemDetailPage() {
   return (
     <div className={`py-4 transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
       <div className="container  mx-auto space-y-6">
-
-        {/* Tabs Content */}
         <div>
             <Card>
               <CardHeader>

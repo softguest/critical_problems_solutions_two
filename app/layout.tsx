@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "AI-powered business solutions platform",
 };
 
+// ...existing code...
+// ...existing code...
 export default async function RootLayout({
   children,
 }: {
@@ -26,7 +28,7 @@ export default async function RootLayout({
         <body className={inter.className}>
           <Providers>
             {children}
-            <FloatingChat />
+            {session?.user && <FloatingChat />}
           </Providers>
         </body>
       </html>
