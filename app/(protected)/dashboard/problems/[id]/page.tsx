@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { EditorRenderer } from "@/components/EditorRenderer";
 import type { EditorContent } from "@/types/editor";
 
@@ -23,18 +21,14 @@ type Message = {
 export default function ProblemDetailPage() {
   const { id } = useParams();
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [activeDiv, setActiveDiv] = useState(1);
-  const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAllData = async () => {
       try {
 
-        // Always fetch subject for preview
-        const problemRes = await fetch(`/api/problem/${id}`);
+        // Always fetch priblem for preview
+        const problemRes = await fetch(`/api/problems/${id}`);
         const problemData = await problemRes.json();
         setProblem(problemData);
       } catch (err) {
@@ -71,7 +65,6 @@ export default function ProblemDetailPage() {
     <div className={`transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}>
       <div className="container mx-auto py-6 space-y-6">
         <div>
-          {activeDiv === 1 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">{problem?.title}</CardTitle>
@@ -81,7 +74,6 @@ export default function ProblemDetailPage() {
                 <EditorRenderer blocks={editorBlocks} />
               </CardContent>
             </Card>
-          )}
         </div>
       </div>
     </div>
