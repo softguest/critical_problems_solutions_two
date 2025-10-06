@@ -9,6 +9,7 @@ import { OutputData } from '@editorjs/editorjs';
 const Editor = dynamic(() => import('@/components/Editor'), { ssr: false });
 
 export default function CreatePostPage() {
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [content, setContent] = useState<OutputData>({ blocks: [] });
@@ -30,6 +31,7 @@ export default function CreatePostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true); 
 
     const formData = new FormData();
     formData.append('title', title);
@@ -43,11 +45,11 @@ export default function CreatePostPage() {
       method: 'POST',
       body: formData,
     });
-
+    setLoading(false); 
     if (res.ok) {
       window.location.href = '/dashboard/problems';
     } else {
-      console.error('Failed to submit subject');
+      console.error('Failed to submit problem');
     }
   }
 
@@ -97,11 +99,28 @@ export default function CreatePostPage() {
           accept="image/*"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-        <button
+        {file && (
+          <div className="mt-2">
+            <img
+              src={URL.createObjectURL(file)}
+              alt="Preview"
+              className="max-w-xs max-h-40 rounded shadow border"
+            />
+          </div>
+        )}
+       <button
           type="submit"
-          className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center"
+          disabled={loading}
         >
-          Publish Problems
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></span>
+              Publishing...
+            </span>
+          ) : (
+            "Publish Problem"
+          )}
         </button>
       </form>
     </div>

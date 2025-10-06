@@ -105,7 +105,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ problems, nextCursor });
   } catch (err) {
-    console.error("GET /api/problem error:", err);
+    console.error("GET /api/problems error:", err);
     return NextResponse.json({ error: "Failed to fetch problems" }, { status: 500 });
   }
 }
