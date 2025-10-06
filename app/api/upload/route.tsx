@@ -1,6 +1,5 @@
 export const runtime = "nodejs";
 
-// app/api/upload/route.ts
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -12,19 +11,22 @@ cloudinary.config({
 
 export async function POST(req: Request) {
   try {
+    console.log("Cloudinary env check:", {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      hasKey: !!process.env.CLOUDINARY_API_KEY,
+      hasSecret: !!process.env.CLOUDINARY_API_SECRET,
+    });
+
     const formData = await req.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Convert File -> Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to Cloudinary
-    const uploaded = await new Promise((resolve, reject) => {
+    const uploaded: any = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: "editorjs_uploads" },
         (error, result) => {
@@ -35,16 +37,12 @@ export async function POST(req: Request) {
       uploadStream.end(buffer);
     });
 
-    // @ts-ignore
     return NextResponse.json({ url: uploaded.secure_url });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Upload failed" },
+      { status: 500 }
+    );
   }
 }
-
-console.log("Cloudinary env check:", {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  hasApiKey: !!process.env.CLOUDINARY_API_KEY,
-  hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
-});
