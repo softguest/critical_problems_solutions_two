@@ -29,29 +29,77 @@ export default function CreatePostPage() {
     fetchCategories();
   }, []);
 
+  // async function handleSubmit(e: React.FormEvent) {
+  //   e.preventDefault();
+  //   setLoading(true); 
+
+  //   const formData = new FormData();
+  //   formData.append('title', title);
+  //   formData.append('content', JSON.stringify(content));
+  //   formData.append('categoryId', selectedCategory);
+  //   if (file) {
+  //     formData.append('file', file);
+  //   }
+
+  //   const res = await fetch('/api/problems', {
+  //     method: 'POST',
+  //     body: formData,
+  //   });
+  //   setLoading(false); 
+  //   if (res.ok) {
+  //     window.location.href = '/dashboard/problems';
+  //   } else {
+  //     console.error('Failed to submit problem');
+  //   }
+  // }
+
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true); 
+  e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', JSON.stringify(content));
-    formData.append('categoryId', selectedCategory);
-    if (file) {
-      formData.append('file', file);
-    }
+  let fileUrl = null;
 
-    const res = await fetch('/api/problems', {
-      method: 'POST',
-      body: formData,
-    });
-    setLoading(false); 
-    if (res.ok) {
-      window.location.href = '/dashboard/problems';
-    } else {
-      console.error('Failed to submit problem');
-    }
+  if (file) {
+    // 1. Get signature from server
+    const sigRes = await fetch("/api/cloudinary/signature");
+    const { timestamp, signature, folder } = await sigRes.json();
+
+    // 2. Prepare Cloudinary upload
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+    uploadData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
+    uploadData.append("timestamp", timestamp);
+    uploadData.append("signature", signature);
+    uploadData.append("folder", folder);
+
+    // 3. Upload directly to Cloudinary
+    const cloudinaryRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      { method: "POST", body: uploadData }
+    );
+
+    const uploaded = await cloudinaryRes.json();
+    fileUrl = uploaded.secure_url;
   }
+
+  // 4. Send post data to your backend
+  const res = await fetch("/api/problems", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title,
+      content,
+      categoryId: selectedCategory,
+      fileUrl,
+    }),
+  });
+
+  if (res.ok) {
+    router.push("/dashboard/problems");
+  } else {
+    console.error("Failed to submit problem");
+  }
+}
+
 
   return (
     <div className="max-w-4xl px-2 mx-auto my-10">
