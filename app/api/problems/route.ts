@@ -1,4 +1,7 @@
 // app/api/problem/route.ts
+export const runtime = "nodejs";
+export const preferredRegion = "fra1"; 
+
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
@@ -12,74 +15,6 @@ cloudinary.config({
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
-// export async function POST(req: Request) {
-//   const session = await auth();
-//   if (!session?.user?.email) {
-//     return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-//   }
-
-//   try {
-//     const formData = await req.formData();
-//     const title = formData.get("title") as string;
-//     const content = JSON.parse(formData.get("content") as string);
-//     const categoryId = formData.get("categoryId") as string;
-//     const file = formData.get("file") as File | null;
-
-//     if (!title || !content || !categoryId) {
-//       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
-//     }
-
-//     let fileUrl: string | null = null;
-//     if (file) {
-//       const buffer = Buffer.from(await file.arrayBuffer());
-//       const result = await new Promise<any>((resolve, reject) => {
-//         cloudinary.uploader
-//           .upload_stream({ folder: "problems" }, (error, result) => {
-//             if (error) return reject(error);
-//             resolve(result);
-//           })
-//           .end(buffer);
-//       });
-//       fileUrl = result.secure_url;
-//     }
-
-//     // 1. Extract plain text for embedding
-//     const plainText = extractTextFromEditorJS(content);
-
-//     // 2. Generate embedding using Gemini (GoogleGenerativeAI)
-//     let embedding: number[] | undefined = undefined;
-//     try {
-//       const model = genAI.getGenerativeModel({ model: "embedding-001" });
-//       const embeddingRes = await model.embedContent({
-//         content: {
-//           role: "user",
-//           parts: [{ text: plainText }],
-//         },
-//       });
-//       embedding = embeddingRes?.embedding?.values ?? undefined;
-//     } catch (embedErr) {
-//       console.error("Embedding error:", embedErr);
-//     }
-
-//     // 3. Store embedding in the database
-//     const newProblem = await db.problem.create({
-//       data: {
-//         title,
-//         content: JSON.stringify(content),
-//         authorEmail: session.user.email,
-//         ...(fileUrl && { fileUrl }),
-//         categoryId,
-//         embedding, // Save embedding for semantic search
-//       },
-//     });
-
-//     return NextResponse.json({ newProblem });
-//   } catch (err) {
-//     console.error(err);
-//     return NextResponse.json({ message: "Failed to create problem" }, { status: 500 });
-//   }
-// }
 
 export async function POST(req: Request) {
   const session = await auth();

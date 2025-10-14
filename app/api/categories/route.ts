@@ -1,4 +1,6 @@
 // app/api/categories/route.ts
+export const runtime = "nodejs";
+export const preferredRegion = "fra1"; 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
