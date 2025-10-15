@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -8,6 +10,14 @@ cloudinary.config({
 });
 
 export async function GET() {
+  if (
+    !process.env.CLOUDINARY_CLOUD_NAME ||
+    !process.env.CLOUDINARY_API_KEY ||
+    !process.env.CLOUDINARY_API_SECRET
+  ) {
+    return NextResponse.json({ error: "Missing Cloudinary credentials" }, { status: 500 });
+  }
+
   const timestamp = Math.round(Date.now() / 1000);
   const folder = "problems";
   const signature = cloudinary.utils.api_sign_request(

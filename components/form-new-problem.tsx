@@ -29,30 +29,6 @@ export default function CreatePostPage() {
     fetchCategories();
   }, []);
 
-  // async function handleSubmit(e: React.FormEvent) {
-  //   e.preventDefault();
-  //   setLoading(true); 
-
-  //   const formData = new FormData();
-  //   formData.append('title', title);
-  //   formData.append('content', JSON.stringify(content));
-  //   formData.append('categoryId', selectedCategory);
-  //   if (file) {
-  //     formData.append('file', file);
-  //   }
-
-  //   const res = await fetch('/api/problems', {
-  //     method: 'POST',
-  //     body: formData,
-  //   });
-  //   setLoading(false); 
-  //   if (res.ok) {
-  //     window.location.href = '/dashboard/problems';
-  //   } else {
-  //     console.error('Failed to submit problem');
-  //   }
-  // }
-
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
 
