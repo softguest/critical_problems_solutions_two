@@ -15,34 +15,12 @@ cloudinary.config({
 // POST: Create a new category
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
+    const body = await req.json(); 
 
-    const name = formData.get("name") as string;
-    const categoryDescription = formData.get("categoryDescription") as string;
-    const file = formData.get("image") as File | null;
+    const { name, categoryDescription, imageUrl } = body;
 
     if (!name) {
       return NextResponse.json({ success: false, error: "Name is required" }, { status: 400 });
-    }
-
-    let imageUrl: string | null = null;
-
-    if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-
-      // Upload to Cloudinary
-      const uploaded = await new Promise<UploadApiResponse>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { folder: "categories" },
-          (err, result) => {
-            if (err || !result) reject(err || new Error("Upload failed"));
-            else resolve(result);
-          }
-        );
-        uploadStream.end(buffer);
-      });
-
-      imageUrl = uploaded.secure_url;
     }
 
     // Save category in DB
@@ -55,10 +33,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, category: newCategory });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating category:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create category" },
+      { success: false, error: error.message || "Failed to create category" },
       { status: 500 }
     );
   }
