@@ -12,31 +12,80 @@ import {
 
 const { auth } = NextAuth(authConfig);
 
+// export default auth((req) => {
+//   const { nextUrl } = req;
+//   const isLoggedIn = !!req.auth;
+
+//   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+//   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+//   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+//   const isDynamicPublicRoute = dynamicPublicRoutes.some((pattern) => pattern.test(nextUrl.pathname));
+
+//   if (isPublicRoute || isDynamicPublicRoute) {
+//     return null;
+//   }
+
+//   if (isApiAuthRoute) {
+//     return null;
+//   }
+
+//   if (isAuthRoute) {
+//     if (isLoggedIn) {
+//       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+//     }
+//     return null;
+//   }
+
+//   if (!isLoggedIn && !isPublicRoute) {
+//     let callbackUrl = nextUrl.pathname;
+//     if (nextUrl.search) {
+//       callbackUrl += nextUrl.search;
+//     }
+
+//     const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+
+//     return Response.redirect(new URL(
+//       `/auth/login?callbackUrl=${encodedCallbackUrl}`,
+//       nextUrl
+//     ));
+//   }
+
+//   // if (req.nextUrl.pathname.startsWith("/admin")) {
+//   //   if (!isLoggedIn ||  !== "ADMIN") {
+//   //     return NextResponse.redirect(new URL("/unauthorized", req.url));
+//   //   }
+//   // }
+
+//   return NextResponse.next()
+//   // return null;
+// })
+
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isPublicApiRoute = nextUrl.pathname.startsWith("/api/frontProblems");
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isDynamicPublicRoute = dynamicPublicRoutes.some((pattern) => pattern.test(nextUrl.pathname));
 
-  if (isPublicRoute || isDynamicPublicRoute) {
-    return null;
+  if (isPublicRoute || isDynamicPublicRoute || isPublicApiRoute) {
+    return NextResponse.next(); // ✅ allow public access
   }
 
   if (isApiAuthRoute) {
-    return null;
+    return NextResponse.next(); // ✅ allow auth API access
   }
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return null;
+    return NextResponse.next();
   }
 
-  if (!isLoggedIn && !isPublicRoute) {
+  if (!isLoggedIn) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {
       callbackUrl += nextUrl.search;
@@ -50,15 +99,9 @@ export default auth((req) => {
     ));
   }
 
-  // if (req.nextUrl.pathname.startsWith("/admin")) {
-  //   if (!isLoggedIn ||  !== "ADMIN") {
-  //     return NextResponse.redirect(new URL("/unauthorized", req.url));
-  //   }
-  // }
+  return NextResponse.next();
+});
 
-  return NextResponse.next()
-  // return null;
-})
 
 export const matcher = {
   matcher: ['/'],

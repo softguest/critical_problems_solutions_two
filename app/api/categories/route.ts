@@ -1,5 +1,6 @@
-// app/api/categories/route.ts
 export const runtime = "nodejs";
+// app/api/categories/route.ts
+
 export const preferredRegion = "fra1"; 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
